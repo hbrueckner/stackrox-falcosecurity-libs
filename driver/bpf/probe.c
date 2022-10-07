@@ -68,8 +68,13 @@ BPF_PROBE("raw_syscalls/", sys_enter, sys_enter_args)
 	} else {
 		evt_type = PPME_GENERIC_E;
 		drop_flags = UF_ALWAYS_DROP;
+#ifdef CAPTURE_SOCKETCALL
+		if (id != __NR_socketcall)
+			return 0;
+#else
 		// Drop syscall events without UF_USED flag
 		return 0;
+#endif
 	}
 
 #ifdef BPF_SUPPORTS_RAW_TRACEPOINTS
@@ -122,8 +127,13 @@ BPF_PROBE("raw_syscalls/", sys_exit, sys_exit_args)
 	} else {
 		evt_type = PPME_GENERIC_X;
 		drop_flags = UF_ALWAYS_DROP;
+#ifdef CAPTURE_SOCKETCALL
+		if (id != __NR_socketcall)
+			return 0;
+#else
 		// Drop syscall events without UF_USED flag
 		return 0;
+#endif
 	}
 
 	call_filler(ctx, ctx, evt_type, settings, drop_flags);
